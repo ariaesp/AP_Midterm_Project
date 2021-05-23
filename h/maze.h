@@ -2,6 +2,8 @@
 #define MAZE_H
 
 #include <iostream>
+#include <list>
+
 
 
 
