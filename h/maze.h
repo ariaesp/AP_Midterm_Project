@@ -36,12 +36,13 @@ private:
     private:
         size_t order{0};  
     };
+    Node* head;
 public:
     Maze()=default;
     Maze(double);
     ~Maze();
     Maze(const Maze&);
-    std::list<Node*> branching();
+    void newlayer(std::list<Node*>, double, double, double);
 
 };
 
