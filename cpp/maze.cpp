@@ -36,8 +36,6 @@ size_t Maze::Node::get_order() const
 
 Maze::Node* Maze::merge(Node* n1, Node* n2)
 {
-    // first operators!!
-    if (n1->get_order() == n2->get_order()) {
         if (*n1 <= *n2){
         n1->children.push_back(n2);
         n2->parent=n1;
@@ -48,10 +46,6 @@ Maze::Node* Maze::merge(Node* n1, Node* n2)
         n1->parent=n2;
         return n2;
         }
-    }
-    else
-        throw std::logic_error("Nodes order mismatch!");
-    //std::cerr<< "Logic error: Nodes order mismatch!"<<std::endl; 
 }
 
 
@@ -96,4 +90,8 @@ void Maze::newlayer(std::list<Node*> layer, double N, double nodecount, double l
         }
         it++;
     }
+    layercount--;
+    newlayer(next,N,nodecount,layercount,saveperlayer);
+    //if statements for last layer and also checking the random generator and the decremnetal range!
+    
 }
