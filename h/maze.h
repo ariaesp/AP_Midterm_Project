@@ -4,6 +4,7 @@
 #include <iostream>
 #include <list>
 #include <set>
+#include <compare>
 
 class Maze {
 private:
@@ -30,19 +31,19 @@ private:
                 return os << "(value:" << n1.value << ", parent:" << n1.parent->value << ", order:" << n1.order<< ")" << std::endl;
         }
 
-        static Node* merge(Node* , Node* );
-        static bool is_min_heap(Node const&);
-        static bool is_max_heap(Node const&);
+        // static bool is_min_heap(Node const&);
+        // static bool is_max_heap(Node const&);
     private:
         size_t order{0};  
     };
+    static Node* merge(Node* , Node* );
     Node* head;
 public:
     Maze()=default;
     Maze(double);
     ~Maze();
     Maze(const Maze&);
-    void newlayer(std::list<Node*>, double, double, double);
+    void newlayer(std::list<Node*>, double, double, double, double);
 
 };
 
