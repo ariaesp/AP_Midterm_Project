@@ -58,7 +58,10 @@ Maze::Maze(double N) {
     double nodecount{1};
     N--;
     std::mt19937 gen(static_cast<long unsigned int>(time(0)));
-    std::uniform_int_distribution<> distrib(1,N-(saveperlayer*layercount));
+    if (3>N-(saveperlayer*layercount))
+        std::uniform_int_distribution<> distrib(1,N-(saveperlayer*layercount));
+    else   
+        std::uniform_int_distribution<> distrib(1,3);  
     double branches=distrib(gen);
     for (double i{};i<branches;i++) {
         Node* a=new Node(nodecount);
@@ -71,16 +74,47 @@ Maze::Maze(double N) {
 }
 
 void Maze::newlayer(std::list<Node*> layer, double N, double nodecount, double layercount, double saveperlayer) {
+    if (layercount==1) {
+        std::list<Node*> next;
+        std::list<Node*>::iterator it=layer.begin();
+        while(){
+            for (double j{};j<3;j++) {
+                Node* a=new Node(nodecount);
+                Node::merge(*it,a);
+                nodecount++;
+                N--;
+                if (N==0) {
+                    flag=true;
+                    break;
+                }
+                next.push_back(a);
+            }
+            it++;
+        }
+        
+    }
+    else {
     std::mt19937 gen(static_cast<long unsigned int>(time(0)));
     std::uniform_int_distribution<> distrib(1,layer.size());
     double num=distrib(gen);
     size_t cnt{};
+    double x{};
+    double branches{};
     std::list<Node*> next;
+    std::list<Node*>::iterator it=layer.begin();
     for (double i{}; i<num; i++) {
-        std::list<Node*>::iterator it=layer.begin();
-        std::mt19937 gen2(static_cast<long unsigned int>(time(0)));
-        std::uniform_int_distribution<> distribb(1,N-(saveperlayer*layercount)-(num-(i+1)));
-        double branches=distribb(gen2);
+        x=N-(saveperlayer*layercount)-(num-(i+1));
+        if (3>x && x>1) {
+            std::uniform_int_distribution<> distribb(1,x);
+            branches=distribb(gen);
+        }    
+        else if (x<=1) {
+            branches=1;
+        }    
+        else {   
+            std::uniform_int_distribution<> distribb(1,3);
+            branches=distribb(gen);
+        }    
         for (double j{};j<branches;j++) {
             Node* a=new Node(nodecount);
             nodecount++;
@@ -92,6 +126,6 @@ void Maze::newlayer(std::list<Node*> layer, double N, double nodecount, double l
     }
     layercount--;
     newlayer(next,N,nodecount,layercount,saveperlayer);
-    //if statements for last layer and also checking the random generator and the decremnetal range!
-    
+    }
+    //if statements for last layer and also checking the random generator and the decremental range!
 }
