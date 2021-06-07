@@ -13,10 +13,10 @@ Maze::Node::Node (double _value, Node& _parent, std::list<Node*> _children)
             n->parent=this;
     }
 
-Maze::Node::Node(double _val,double _rp, double _cp): value(_val),rp(_rp),cp(_cp) {}
-
-Maze::Node::Node(double _val): value(_val) {}
-
+Maze::Node::Node(double _value) //: Node{_value,nullptr,std::list<Node*> ch{}}
+{
+    value=_value;
+}
 
 size_t Maze::Node::get_order() const
 {
@@ -46,75 +46,35 @@ Maze::Node* Maze::merge(Node* n1, Node* n2)
         }
 }
 
-Maze::Maze(double R, double C) {
-    double N=R*C;
-    double matR=3+2*(R-1);
-    double matC=3+2*(C-1);
+Maze::Maze(double N) {
     if (N<9)
         throw std::logic_error("too little dimensions!");
-    else{
-    mat.resize(matR);
-    double n{};
-    for (double i{};i<matR;i++) {
-        mat[i].resize(C);
-        for (double j{};j<matC;j++) {
-            if(i==0 || j==0 || i==matR-1 || j==matC-1)
-                mat[i][j]=-2;
-            else if (i%2==0 && j%2==0)
-                mat[i][j]=-2;
-            else if (i%2!=0 && j%2!=0) {
-                mat[i][j]=n;
-                Node* a= new Node(n,i,j);
-                Nodes.push_back(a);
-                n++;
-            }
-        }
-    }
-
+    else{    
+    double layercount{round(sqrt(N))};
+    double saveperlayer{2};
+    head= new Node(0);
+    double nodecount{1};
+    N--;
+    double branches{};
     std::mt19937 gen(static_cast<long unsigned int>(time(0)));
-    std::set<double> seen;
-    std::uniform_int_distribution<> distrib(0,C-1);
-    double head_value=distrib(gen);
-    //double head_cp=1+(head_value%C)*2;
-    head=this->findnode(head_value);
-    seen.insert(head_value);
-    this->buildmaze(head);
-
-
-
-    // double layercount{round(sqrt(N))};
-    // double saveperlayer{2};
-    // head= new Node(0);
-    // double nodecount{1};
-    // N--;
-    // double branches{};
-    // double x=N-(saveperlayer*layercount);
-    // if (3>x){
-    //     branches=distrib(gen);
-    // }    
-    // else {  
-    //     std::uniform_int_distribution<> distrib(1,3);
-    //     branches=distrib(gen);
-    // }
-    // for (double i{};i<branches;i++) {
-    //     Node* a{new Node(nodecount)};
-    //     nodecount++;
-    //     N--;
-    //     merge(head,a);
-    // }
-    // std::cout <<"passed first layer and nodecount:"<<nodecount<<std::endl;
-    // layercount--;
-    // newlayer(gen,head->children,N,nodecount,layercount,saveperlayer);
-    // }
-}
-
-void Maze::buildmaze(std::mt19937 gen,Node* head){
-
-}
-
-Maze::Node* Maze::findnode(double _value) {
-    for(auto i:Nodes) {
-        if(i->value==_value) return i;
+    double x=N-(saveperlayer*layercount);
+    if (3>x){
+        std::uniform_int_distribution<> distrib(1,x);
+        branches=distrib(gen);
+    }    
+    else {  
+        std::uniform_int_distribution<> distrib(1,3);
+        branches=distrib(gen);
+    }
+    for (double i{};i<branches;i++) {
+        Node* a{new Node(nodecount)};
+        nodecount++;
+        N--;
+        merge(head,a);
+    }
+    std::cout <<"passed first layer and nodecount:"<<nodecount<<std::endl;
+    layercount--;
+    newlayer(gen,head->children,N,nodecount,layercount,saveperlayer);
     }
 }
 

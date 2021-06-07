@@ -9,22 +9,17 @@
 #include <time.h>
 #include <random>
 #include <math.h>
-#include <vector>
-using Matrix= std::vector<std::vector<double>>;
 
 class Maze {
 private:
     size_t N{};
     class Node {
     public:
-        double rp;
-        double cp;
         double value{0};
         Node* parent{nullptr};
         std::list<Node*> children;
         Node()=default;
         Node(double);
-        Maze::Node::Node(double _val,double _rp, double _cp);
         explicit Node(double, Node&, std::list<Node*>);
         //Node(const Node& n, BinomialHeap& outBH );
         size_t get_order() const;
@@ -45,16 +40,11 @@ private:
     private:
         size_t order{0};  
     };
-    std::list<Node*> Nodes;
-    Node* head;
-    Node* findnode(double);
     static Node* merge(Node*, Node*);
-    Matrix mat;
-    void buildmaze(std::mt19937,Node*);
-
+    Node* head;
 public:
     Maze()=default;
-    Maze(double,double);
+    Maze(double);
     ~Maze();
     //Maze(const Maze&);
     void newlayer(std::mt19937&, std::list<Node*>, double, double, double, double);

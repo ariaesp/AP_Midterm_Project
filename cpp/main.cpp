@@ -1,14 +1,13 @@
 #include <iostream>
-#include "gtest/gtest.h"
+#include <maze.h>
+#include <math.h>
+//#include "gtest/gtest.h"
 
 int main(int argc, char **argv)
 {
-    ::testing::InitGoogleTest(&argc, argv);
-    std::cout << "RUNNING TESTS ..." << std::endl;
-    int ret{RUN_ALL_TESTS()};
-    if (!ret)
-        std::cout << "<<<SUCCESS>>>" << std::endl;
-    else
-        std::cout << "FAILED" << std::endl;
-    return 0;
+    //Maze::createnode();
+    // std::cout<<round(sqrt(a))<<std::endl;
+    Maze a (100);
+
+    a.show();
 }
