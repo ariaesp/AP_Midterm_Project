@@ -25,6 +25,7 @@ private:
         Node()=default;
         Node(int);
         Node(int _val,int _rp, int _cp);
+        Node(const Node& n, Maze&);
         //explicit Node(int, Node&, std::list<Node*>);
         //Node(const Node& n, BinomialHeap& outBH );
         size_t get_order() const;
@@ -58,11 +59,14 @@ public:
     Maze()=default;
     Maze(int,int);
     ~Maze();
-    //Maze(const Maze&);
+    Maze(const Maze&);
+    Maze operator=(const Maze&);
     void newlayer(std::mt19937&, std::list<Node*>, int, int, int, int);
     void show();
     void Nshow(Node&, int, bool&);
     void matshow();
+    void DFS();
+    void trackdown(std::list<Node*>&,std::list<Node*>&,Node*,int&,int&)
 };
 
 #endif

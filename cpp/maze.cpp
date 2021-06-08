@@ -1,21 +1,20 @@
 #include <maze.h>
 
-//#define saveperlayer=2
-
-// Maze::Node::Node (int _value, Node& _parent, std::list<Node*> _children)  
-//     {
-//         value=_value;
-//         parent=&_parent;
-//         children=_children;
-//         order=get_order();
-//         _parent.children.push_back(this);
-//         for (auto &n : _children)
-//             n->parent=this;
-//     }
-
 Maze::Node::Node(int _val,int _rp, int _cp): value(_val),rp(_rp),cp(_cp) {}
 
 Maze::Node::Node(int _val): value(_val) {}
+
+Maze::Node::Node(const Node& n, Maze& M) { 
+    value=n.value;
+    M.Nodes.push_back(this);
+    if (!n.children.empty()) {
+        for (auto i : n.children) {
+            Node* a= new Node(*i,M);
+            a->parent=this;
+            this->children.push_back(a);
+    }
+    }
+}
 
 
 size_t Maze::Node::get_order() const
@@ -84,36 +83,15 @@ Maze::Maze(int R, int C) {
         }
     }
 
-    for (int i{1};i<matR;i++) {
-        for (int j{1};j<matC;j++) {
-            if( (i+j)%2!=0 && i!=matR-1 && j!=matC-1 && mat[i][j]==0) mat[i][j]=-2;
+    for (int i{0};i<matR;i++) {
+        for (int j{0};j<matC;j++) {
+            if((i+j)%2!=0 && i!=matR-1 && j!=matC-1 && i!=0 && j!=0 && mat[i][j]==0) mat[i][j]=-2;
+            if (i==0 && mat[i+1][j]==head->value) mat[i][j]=-1;
+            std::uniform_int_distribution<> distrib(1,C);
+            if(i==matR-1 && j==1+2*(distrib(gen)/C)) mat[i][j]=-1;
+
         }
     }
-
-    // int layercount{round(sqrt(N))};
-    // int saveperlayer{2};
-    // head= new Node(0);
-    // int nodecount{1};
-    // N--;
-    // int branches{};
-    // int x=N-(saveperlayer*layercount);
-    // if (3>x){
-    //     branches=distrib(gen);
-    // }    
-    // else {  
-    //     std::uniform_int_distribution<> distrib(1,3);
-    //     branches=distrib(gen);
-    // }
-    // for (int i{};i<branches;i++) {
-    //     Node* mat{new Node(nodecount)};
-    //     nodecount++;
-    //     N--;
-    //     merge(head,mat);
-    // }
-    // std::cout <<"passed first layer and nodecount:"<<nodecount<<std::endl;
-    // layercount--;
-    // newlayer(gen,head->children,N,nodecount,layercount,saveperlayer);
-    // }
 }
 }
 
@@ -304,100 +282,14 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
     if (!nextnodes.empty()) {
         for (auto i:nextnodes) buildmaze(gen,i,1);
     }
-}
+    }
 }   
-//     int direction=distrib(gen); // 1=up or down , 2=right or left
-//     int back_front=distrib(gen); // 1=up and right 2=down and left
-//     if (direction==1) 
-// }
-
 
 Maze::Node* Maze::findnode(int _value) {
     for(auto i:Nodes) {
         if(i->value==_value) return i;
     }
 }
-
-// void Maze::newlayer(std::mt19937& gen,std::list<Node*> layer, int N, int nodecount, int layercount, int saveperlayer) {
-//     if (layercount==1) {
-//         std::list<Node*> next;
-//         std::list<Node*>::iterator it=layer.begin();
-//         bool flag=false;
-//         while(true){
-//             for (int j{};j<3;j++) {
-//                 Node* mat{new Node(nodecount)};
-//                 merge(*it,mat);
-//                 nodecount++;
-//                 N--;
-//                 if (N==0) {
-//                     flag=true;
-//                     break;
-//                 }
-//                 next.push_back(mat);
-//             }
-//             if (flag) break;
-//             it++;
-//             if(it==layer.end() && N>0) {
-//                 newlayer(gen,next,N,nodecount,1,saveperlayer);
-//                 break;
-//             }
-//         }    
-//     }
-//     else {
-//     int num{};
-//     int max= round((N-(layercount-1)*saveperlayer)/3)+1;
-//     if (max>layer.size()) {
-//         std::uniform_int_distribution<> distrib(1,layer.size());
-//         num=distrib(gen);}
-//     else {  
-//         std::uniform_int_distribution<> distrib(1,max);
-//         num=distrib(gen); }
-//     std::cout<<"num:"<<num<<std::endl;
-//     //size_t cnt{};
-//     int x{};
-//     int branches{};
-//     bool flag=false;
-//     bool mainflag=false;
-//     std::list<Node*> next;
-//     std::list<Node*>::iterator it=layer.begin();
-//     for (int i{}; i<num; i++) {
-//         x=N-(saveperlayer*layercount)-(num-(i+1));
-//         std::cout<<"x:"<<x<<std::endl;
-//         if (3>x && x>1) {
-//             std::uniform_int_distribution<> distribb(1,x);
-//             branches=distribb(gen);
-//         }    
-//         else if (x<=1) {
-//             branches=1;
-//             flag=true;
-//         }    
-//         else {   
-//             std::uniform_int_distribution<> distribb(1,3);
-//             branches=distribb(gen);
-//         } 
-//         std::cout<<"branches:"<<branches<<std::endl;   
-//         for (int j{};j<branches;j++) {
-//             Node* mat{new Node(nodecount)};
-//             nodecount++;
-//             N--;
-//             merge(*it,mat);
-//             if (N==0) {
-//                 mainflag=true;
-//                 break;
-//             }    
-//             next.push_back(mat);
-//         }
-//         if (flag || mainflag) break;
-//         it++;
-//     }
-//     if (!mainflag) {
-//     std::cout<<"passed second! layer"<<std::endl;
-//     layercount--;
-//     newlayer(gen,next,N,nodecount,layercount,saveperlayer);
-//     }
-//     }
-//     //if statements for last layer and also checking the random generator and the decremental range!
-// }
 
 void Maze::show() {
         std::cout<< head->value << " ";
@@ -409,7 +301,7 @@ void Maze::show() {
             }    
             Nshow(*j,1,flag);
         }
-    }
+}
 
 void Maze::Nshow(Node& n, int depth, bool & flag) {
     std::cout<< n.value<< " ";
@@ -439,7 +331,7 @@ void Maze::matshow()
     {
         for (size_t j{}; j < mat[0].size(); j++) {
             if (mat[i][j]==-2){
-            std::cout << "\x1b[2;30;47m # "; //\x1b[2;30;43m
+            std::cout << "\x1b[2;30;47m   "; //\x1b[2;30;43m
             std::cout<<"\x1b[2;0;0m";
             }
             else if (mat[i][j]==-1)
@@ -456,4 +348,43 @@ void Maze::matshow()
         std::cout<<"\x1b[2;0;0m";
     std::cout<< std::endl;
     }        
+}
+
+Maze::Maze(const Maze& M) {
+    mat=M.mat;
+    head=new Node(*(M.head),*this);
+}
+
+Maze Maze::operator=(const Maze& M) {
+    mat=M.mat;
+    head=new Node(*(M.head),*this);
+    return *this;
+}
+
+void Maze::DFS() {
+    int target{29};
+    Maze copy{*this};
+    std::list<Node*> branched;
+    std::list<Node*> stack;
+    stack.push_back(copy.head);
+    int counter{1};
+    //if children>1
+    branched.push_back(copy.head);
+    std::list<Node*>::iterator it=copy.head->children.begin();
+    trackdown(stack,branched,*it,counter,target);
+}
+
+
+void Maze::trackdown(std::list<Node*>& stack,std::list<Node*>& branched,Node* inp, int& counter, int& target) {
+    stack.push_back(inp);
+    counter++;
+    if (inp->value==target) return;
+    if (inp->children.size()>1) branched.push_back(inp);
+    if (inp->children.empty()) {
+        while((*stack.rbegin())->parent!=*(branched.rbegin())) stack.pop_back();
+        *branched.rbegin()->children.erase(*stack.rbegin());
+        stack.pop_back();
+        if(*branched.rbegin()->children.size()==1) branched.pop_back();
+        trackdown(stack,branched,*(*stack.rbegin()->children.begin()),counter,target);
+    }
 }
