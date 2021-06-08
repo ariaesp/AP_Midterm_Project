@@ -10,22 +10,22 @@
 #include <random>
 #include <math.h>
 #include <vector>
-using Matrix= std::vector<std::vector<double>>;
+using Matrix= std::vector<std::vector<int>>;
 
 class Maze {
 private:
     size_t N{};
     class Node {
     public:
-        double rp;
-        double cp;
-        double value{0};
+        int rp;
+        int cp;
+        int value;
         Node* parent{nullptr};
         std::list<Node*> children;
         Node()=default;
-        Node(double);
-        Maze::Node::Node(double _val,double _rp, double _cp);
-        explicit Node(double, Node&, std::list<Node*>);
+        Node(int);
+        Node(int _val,int _rp, int _cp);
+        //explicit Node(int, Node&, std::list<Node*>);
         //Node(const Node& n, BinomialHeap& outBH );
         size_t get_order() const;
         void set_order(size_t new_order) {order=new_order;};
@@ -47,32 +47,22 @@ private:
     };
     std::list<Node*> Nodes;
     Node* head;
-    Node* findnode(double);
+    Node* findnode(int);
     static Node* merge(Node*, Node*);
     Matrix mat;
-    void buildmaze(std::mt19937,Node*);
+    void buildmaze(std::mt19937&,Node* input,int relation); //relation: input is a child or parent. (parent=1,child=2)
+    std::set<int> seen;
+    bool is_seen(int val) {if (seen.find(val)!=seen.end()) return true; else return false;}
 
 public:
     Maze()=default;
-    Maze(double,double);
+    Maze(int,int);
     ~Maze();
     //Maze(const Maze&);
-    void newlayer(std::mt19937&, std::list<Node*>, double, double, double, double);
+    void newlayer(std::mt19937&, std::list<Node*>, int, int, int, int);
     void show();
-    void Nshow(Node&, double, bool&);
-    static void createnode() {
-        std::list<Node*> list; 
-        for (size_t i{};i<4;i++) {
-            Node* a=new Node(i);
-            list.push_back(a);
-        }
-        std::list<Node*>::iterator it=list.begin();
-        while (it!=list.end()){
-            std::cout<<(*it)->value<<std::endl;
-            it++;
-            if (it==list.end()) std::cout<<"yes"<<std::endl;
-        }    
-    };
+    void Nshow(Node&, int, bool&);
+    void matshow();
 };
 
 #endif

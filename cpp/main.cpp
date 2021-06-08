@@ -7,7 +7,7 @@ int main(int argc, char **argv)
 {
     //Maze::createnode();
     // std::cout<<round(sqrt(a))<<std::endl;
-    Maze a (100);
+    Maze a (17,17);
 
-    a.show();
+    a.matshow();
 }
