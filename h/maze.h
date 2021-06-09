@@ -48,6 +48,7 @@ private:
     };
     std::list<Node*> Nodes;
     Node* head;
+    Node* exit;
     Node* findnode(int);
     static Node* merge(Node*, Node*);
     Matrix mat;
@@ -61,12 +62,13 @@ public:
     ~Maze();
     Maze(const Maze&);
     Maze operator=(const Maze&);
-    void newlayer(std::mt19937&, std::list<Node*>, int, int, int, int);
-    void show();
-    void Nshow(Node&, int, bool&);
-    void matshow();
+    // void newlayer(std::mt19937&, std::list<Node*>, int, int, int, int);
+    // void show();
+    // void Nshow(Node&, int, bool&);
+    void showmaze();
     void DFS();
-    void trackdown(std::list<Node*>&,std::list<Node*>&,Node*,int&,int&)
+    void trackdown(std::list<Node*>&,std::list<Node*>&,Node*,int&,int&);
+    void showpath(std::list<Node*>&);
 };
 
 #endif
