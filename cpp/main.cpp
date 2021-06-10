@@ -5,10 +5,10 @@
 int main(int argc, char **argv)
 {
 
-    Maze a (10,10);
+    Maze a (17,25);
 
     a.showmaze();
     a.DFS();
-//     a.BFS();
-//     a.bidirectional();
+    a.BFS();
+    a.bidirectional();
 }

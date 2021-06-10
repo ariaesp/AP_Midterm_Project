@@ -19,20 +19,6 @@ Maze::Node::Node(const Node& n, Maze& M) {
 }
 
 
-size_t Maze::Node::get_order() const
-{
-    if(this->children.empty())
-        return 0;
-    else {
-        size_t n{};
-        for (auto &child : this->children) {
-            size_t c=child->get_order();
-            if(c>n) n=c;
-        }
-        return n+1;
-    }    
-}
-
 Maze::Node* Maze::merge(Node* n1, Node* n2)
 {
         n1->children.push_back(n2);
@@ -409,7 +395,6 @@ void Maze::DFS() {
     std::list<Node*> stack;
     stack.push_back(copy.head);
     int counter{1};
-    //if children>1
     branched.push_back(copy.head);
     std::list<Node*>::iterator it=copy.head->children.begin();
     trackdown(stack,branched,*it,counter,target);
