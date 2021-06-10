@@ -17,9 +17,9 @@ private:
     size_t N{};
     class Node {
     public:
+        int value;
         int rp;
         int cp;
-        int value;
         Node* parent{nullptr};
         std::list<Node*> children;
         Node()=default;
@@ -41,8 +41,6 @@ private:
                 return os << "(value:" << n1.value << ", parent:" << n1.parent->value << ", order:" << n1.order<< ")" << std::endl;
         }
 
-        // static bool is_min_heap(Node const&);
-        // static bool is_max_heap(Node const&);
     private:
         size_t order{0};  
     };
@@ -52,7 +50,8 @@ private:
     Node* findnode(int);
     static Node* merge(Node*, Node*);
     Matrix mat;
-    void buildmaze(std::mt19937&,Node* input,int relation); //relation: input is a child or parent. (parent=1,child=2)
+    void buildmaze(std::mt19937&,Node* input,int relation,bool help); //relation: input is a child or parent. (parent=1,child=2)
+    void helpbuilder(std::mt19937&);
     std::set<int> seen;
     bool is_seen(int val) {if (seen.find(val)!=seen.end()) return true; else return false;}
 
@@ -67,8 +66,13 @@ public:
     // void Nshow(Node&, int, bool&);
     void showmaze();
     void DFS();
+    void BFS();
+    void bidirectional();
     void trackdown(std::list<Node*>&,std::list<Node*>&,Node*,int&,int&);
-    void showpath(std::list<Node*>&);
+    void showpath(std::list<Node*>&,int,int);
 };
 
+
+
 #endif
+

@@ -2,7 +2,7 @@
 
 Maze::Node::Node(int _val,int _rp, int _cp): value(_val),rp(_rp),cp(_cp) {}
 
-Maze::Node::Node(int _val): value(_val) {}
+Maze::Node::Node(int _val): Node{_val,0,0} {}
 
 Maze::Node::Node(const Node& n, Maze& M) { 
     value=n.value;
@@ -14,7 +14,7 @@ Maze::Node::Node(const Node& n, Maze& M) {
             Node* a= new Node(*i,M);
             a->parent=this;
             this->children.push_back(a);
-    }
+        }
     }
 }
 
@@ -44,8 +44,7 @@ Maze::Maze(int R, int C) {
     int N=R*C;
     int matR=3+2*(R-1);
     int matC=3+2*(C-1);
-    if (N<9)
-        throw std::logic_error("too little dimensions!");
+    if (R<3 || C<3 || N<9) throw std::logic_error("too little dimensions!");
     else{
     mat.resize(matR);
     int n{};
@@ -68,17 +67,20 @@ Maze::Maze(int R, int C) {
     std::mt19937 gen(static_cast<long unsigned int>(time(0)));
     std::uniform_int_distribution<> distrib(0,C-1);
     int head_value=distrib(gen);
-    //int head_cp=1+(head_value%C)*2;
     head=findnode(head_value);
     seen.insert(head_value);
-    buildmaze(gen,head,1);
-    if (seen.size()<N) {
-        //std::cout<<"entered help builder!"<<std::endl;
-        while(seen.size()!=N){
-           // std::cout<<seen.size()<<std::endl;
+    buildmaze(gen,head,1,false);
+    helpbuilder(gen);
+
+    if(seen.size()<0.2*N){
+        for (size_t l;l<2;l++) helpbuilder(gen);
+    }
+
+    if (seen.size()<static_cast<size_t>(N)) {
+        while(seen.size()!=static_cast<size_t>(N)){
             for (auto i:Nodes){
                 if (!is_seen(i->value)) {
-                    buildmaze(gen,i,2);
+                    buildmaze(gen,i,2,false);
                     break;
                 }
             }
@@ -86,7 +88,11 @@ Maze::Maze(int R, int C) {
     }
 
     std::uniform_int_distribution<> distribb(0,C-1);
-    int p=distribb(gen);
+    int p{};
+    while(true){
+        p=distribb(gen);
+        if (head->cp!=1+2*(p%C)) break;
+    }
     for (int i{0};i<matR;i++) {
         for (int j{0};j<matC;j++) {
             if((i+j)%2!=0 && i!=matR-1 && j!=matC-1 && i!=0 && j!=0 && mat[i][j]==0) mat[i][j]=-2;
@@ -104,7 +110,7 @@ Maze::Maze(int R, int C) {
 }
 
 
-void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
+void Maze::buildmaze(std::mt19937& gen,Node* input, int relation,bool help){
     std::set<size_t> direction{1,2,3,4};
     std::list<Node*> nextnodes;
 
@@ -117,7 +123,7 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
     if(down==-2 || down==-1) direction.erase(3);
     if(left==-2 || left==-1) direction.erase(4);
     if(right==-2 || right==-1) direction.erase(2);
-
+    
     bool isolflag=true;
     if(relation==2) {
         seen.insert(input->value);
@@ -134,7 +140,10 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
         if(distrib(gen)==1) {
         std::set<size_t>::iterator it=direction.begin();
         std::uniform_int_distribution<> distribb(1,direction.size());
-        for (size_t i{};i<distribb(gen);i++) {
+        size_t d{};
+        if(help) d=direction.size();
+        else d=distribb(gen);
+        for (size_t i{};i<d;i++) {
             if(*it==1) {
                 int next=mat[input->rp-2][input->cp];
                 if(relation==1) {
@@ -150,11 +159,10 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
                 else {
                     mat[input->rp-1][input->cp]=-1;
                     Node* nxt=findnode(next);
-                    if (is_seen(next)) {
+                    if (is_seen(next) || isolflag) {
                     merge(nxt,input);
                     break;
                     }
-                    if (isolflag) merge(nxt,input);
                     else merge(input,nxt);
                 } 
             }
@@ -173,11 +181,10 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
                 else {
                     mat[input->rp][input->cp+1]=-1;
                     Node* nxt=findnode(next);
-                    if (is_seen(next)) {
+                    if (is_seen(next)|| isolflag) {
                     merge(nxt,input);
                     break;
                     }
-                    if (isolflag) merge(nxt,input);
                     else merge(input,nxt);
                 } 
             }
@@ -196,11 +203,10 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
                 else {
                     mat[input->rp+1][input->cp]=-1;
                     Node* nxt=findnode(next);
-                    if (is_seen(next)) {
+                    if (is_seen(next)|| isolflag) {
                     merge(nxt,input);
                     break;
                     }
-                    if (isolflag) merge(nxt,input);
                     else merge(input,nxt);
                 } 
             }
@@ -219,11 +225,10 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
                 else {
                     mat[input->rp][input->cp-1]=-1;
                     Node* nxt=findnode(next);
-                    if (is_seen(next)) {
+                    if (is_seen(next)|| isolflag) {
                     merge(nxt,input);
                     break;
                     }
-                    if (isolflag) merge(nxt,input);
                     else merge(input,nxt);
                 } 
             }
@@ -233,7 +238,10 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
     else {
         std::set<size_t>::reverse_iterator it=direction.rbegin();
         std::uniform_int_distribution<> distribb(1,direction.size());
-        for (size_t i{};i<distribb(gen);i++) {
+        size_t d{};
+        if(help) d=direction.size();
+        else d=distribb(gen);
+        for (size_t i{};i<d;i++) {
             if(*it==1) {
                 int next=mat[input->rp-2][input->cp];
                 if(relation==1) {
@@ -249,11 +257,10 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
                 else {
                     mat[input->rp-1][input->cp]=-1;
                     Node* nxt=findnode(next);
-                    if (is_seen(next)) {
+                    if (is_seen(next)|| isolflag) {
                     merge(nxt,input);
                     break;
                     }
-                    if (isolflag) merge(nxt,input);
                     else merge(input,nxt);
                 } 
             }
@@ -272,11 +279,10 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
                 else {
                     mat[input->rp][input->cp+1]=-1;
                     Node* nxt=findnode(next);
-                    if (is_seen(next)) {
+                    if (is_seen(next)|| isolflag) {
                     merge(nxt,input);
                     break;
                     }
-                    if (isolflag) merge(nxt,input);
                     else merge(input,nxt);
                 } 
             }
@@ -295,11 +301,10 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
                 else {
                     mat[input->rp+1][input->cp]=-1;
                     Node* nxt=findnode(next);
-                    if (is_seen(next)) {
+                    if (is_seen(next)|| isolflag) {
                     merge(nxt,input);
                     break;
                     }
-                    if (isolflag) merge(nxt,input);
                     else merge(input,nxt);
                 } 
             }
@@ -318,11 +323,10 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
                 else {
                     mat[input->rp][input->cp-1]=-1;
                     Node* nxt=findnode(next);
-                    if (is_seen(next)) {
+                    if (is_seen(next)|| isolflag) {
                     merge(nxt,input);
                     break;
                     }
-                    if (isolflag) merge(nxt,input);
                     else merge(input,nxt);
                 } 
             }
@@ -330,46 +334,42 @@ void Maze::buildmaze(std::mt19937& gen,Node* input, int relation){
         }
     }
     if (!nextnodes.empty()) {
-        for (auto i:nextnodes) buildmaze(gen,i,1);
+        for (auto i:nextnodes) buildmaze(gen,i,1,false);
     }
-    }
-}   
-
-Maze::Node* Maze::findnode(int _value) {
-    for(auto i:Nodes) {
-        if(i->value==_value) return i;
     }
 }
 
-// void Maze::show() {
-//         std::cout<< head->value << " ";
-//         bool flag=false;
-//         for (auto j:head->children){
-//             if (flag) {
-//                 std::cout<<"  ";
-//                 flag=false;
-//             }    
-//             Nshow(*j,1,flag);
-//         }
-// }
+void Maze::helpbuilder(std::mt19937& gen) {
+    int cnt{};
+    std::set<int>::iterator it=seen.begin();
+    while(cnt<30) {
+        if (it==seen.end()) {
+            // std::cout<<"reached end"<<std::endl;
+            it=seen.begin();
+        }
+        if(*it==head->value) {
+                it++;
+        }
+        buildmaze(gen,findnode(*it),1,false);
+        // std::cout<<seen.size()<<std::endl;
+        cnt++;
+        it++;
+        if(seen.size()==N) break;
+    }
+}
 
-// void Maze::Nshow(Node& n, int depth, bool & flag) {
-//     std::cout<< n.value<< " ";
-//     depth++;
-//     if(n.children.empty()) {
-//         std::cout<< std::endl;
-//         flag=true;
-//     }
-//     else {
-//         for (auto i:n.children) {
-//             if (flag) {
-//                 for (size_t j{}; j<depth; j++) std::cout<<"  ";
-//                 flag=false;
-//             }
-//             Nshow(*i,depth,flag);
-//         }
-//     }    
-// }
+
+Maze::Node* Maze::findnode(int _value) {
+    Node* b;
+    for(auto i:Nodes) {
+        if(i->value==_value) {
+            b=i;
+            break;
+        }
+    }
+    return b;
+}
+
 
 Maze::~Maze(){
     delete head;
@@ -381,7 +381,7 @@ void Maze::showmaze()
     {
         for (size_t j{}; j < mat[0].size(); j++) {
             if (mat[i][j]==-2){
-            std::cout << "\x1b[2;30;47m   "; //\x1b[2;30;43m
+            std::cout << "\x1b[2;30;47m   "; 
             std::cout<<"\x1b[2;0;0m";
             }
             else 
@@ -413,9 +413,7 @@ void Maze::DFS() {
     branched.push_back(copy.head);
     std::list<Node*>::iterator it=copy.head->children.begin();
     trackdown(stack,branched,*it,counter,target);
-    showpath(stack);
-    // for(auto i:stack) std::cout<<i->value<<" ";
-    // std::cout<<std::endl;
+    showpath(stack,counter,1);
 }
 
 
@@ -436,8 +434,15 @@ void Maze::trackdown(std::list<Node*>& stack,std::list<Node*>& branched,Node* in
     else trackdown(stack,branched,*(inp->children.begin()),counter,target);
 }
 
-void Maze::showpath(std::list<Node*> &stack) {
+void Maze::showpath(std::list<Node*> &stack,int count,int type) {
     std::cout<<std::endl<<std::endl;
+    if (type==1)
+        std::cout<<"<DFS method>"<<std::endl;
+    else if(type==2) 
+        std::cout<<"<BFS method>"<<std::endl;
+    else if(type==3) 
+        std::cout<<"<Bidirectional method>"<<std::endl;
+    std::cout<<"Number of nodes counted:"<<count<<std::endl;
     Matrix matt=mat;
     std::list<Node*>::iterator it=stack.begin();
     int r,c;
@@ -445,7 +450,6 @@ void Maze::showpath(std::list<Node*> &stack) {
     while(true) {
         r=(*it)->rp;
         c=(*it)->cp;
-        // std::cout<<r<<" "<<c<<std::endl;
         matt[r][c]=-3;
         it++;
         if (it==stack.end()) break;
@@ -455,7 +459,7 @@ void Maze::showpath(std::list<Node*> &stack) {
     {
         for (size_t j{}; j < matt[0].size(); j++) {
             if (matt[i][j]==-2){
-            std::cout << "\x1b[2;30;47m   "; //\x1b[2;30;43m
+            std::cout << "\x1b[2;30;47m   ";
             std::cout<<"\x1b[2;0;0m";
             }
             else if(matt[i][j]==-3 || matt[i][j]==-4) {
@@ -467,4 +471,72 @@ void Maze::showpath(std::list<Node*> &stack) {
         }
     std::cout<< std::endl;
     }    
+}
+
+
+void Maze::BFS() {
+    int target{exit->value};
+    std::list<Node*> ans;
+    std::list<std::list<Node*>> queues;
+    int count{1};
+    for(auto i:head->children) {
+        std::list<Node*> a{head,i};
+        count++;
+        queues.push_back(a);
+    }
+    bool findflag=false;
+    std::list<std::list<Node*>>::iterator it=queues.begin();
+    std::list<Node*> childs;
+
+    while(!findflag){
+        it=queues.begin();
+        //std::cout<<"into the main loop"<<std::endl;
+        while(it!=queues.end()) {    
+            childs=(*it).back()->children;
+            if(childs.size()>1) {
+                // std::cout<<"more than 1 children"<<std::endl;
+                std::list<Node*> b=*it;
+                for (size_t i{};i<childs.size()-1;i++) it=queues.insert(it,b);
+                for(auto j:childs) {
+                    (*it).push_back(j);
+                    count++;
+                    if(j->value==target){
+                        findflag=true;
+                        ans=*it;
+                        break;
+                    }
+                    it++;
+                }
+            }
+            else if(childs.size()==1){
+                // std::cout<<"1 child"<<std::endl;
+                (*it).push_back(childs.front());
+                count++;
+                if(childs.front()->value==target) {
+                    findflag=true;
+                    ans=*it;
+                }
+                it++;
+            }
+            else {
+                // std::cout<<"no child"<<std::endl;
+                it=queues.erase(it);
+            }
+            if(findflag) break;
+        }
+    }
+    showpath(ans,count,2);
+}
+
+void Maze::bidirectional() {
+    Node* carrier=exit;
+    std::list<Node*> path;
+    int count{1};
+    path.push_front(carrier);
+    while(carrier->value!=head->value) {
+        carrier=carrier->parent;
+        count++;
+        path.push_front(carrier);
+    }
+    showpath(path,count,3);
 }
